@@ -39,15 +39,15 @@ ui <- fluidPage(
             # Select years for x-axis of Plot 1 and 2
             sliderInput(inputId = "x1", 
                   label = "X-axis:", 
-                  min = 2000, 
-                  max = 2015,
+                  min = min(world.bank.df$Year), 
+                  max = max(world.bank.df$Year),
                   step = 1, 
-                  value = c(2010,2015)),
+                  value = c(max(world.bank.df$Year)-10,max(world.bank.df$Year))),
             
             # Horizontal line for visual separation
             hr(),
             
-            # Select which types of movies to plot ------------------------
+            # Select continents for plots 2 and 3 and data table
             checkboxGroupInput(inputId = "continent",
                                label = "Select continent(s)*:",
                                choices = unique(world.bank.df$ContinentName),
@@ -61,21 +61,18 @@ ui <- fluidPage(
             
             # Select the country on focus for Plot 3
             uiOutput("selectCountry"),
-            #selectInput(inputId = "country",
-            #         label = "Select a country:",
-            #         choices = world.bank.df$CountryName),
             
             # Select an indicator for y axis of Plot 3
             selectInput(inputId = "y3",
                         label = "Y-axis:",
                         choices = colnames(world.bank.df)[5:50],
-                        selected = "Exports.of.goods.and.services....of.GDP."),
+                        selected = "Energy.use..kg.of.oil.equivalent.per.capita."),
             
             # Select an indicator for x axis of Plot 3
             selectInput(inputId = "x3",
                         label = "X-axis:",
                         choices = colnames(world.bank.df)[5:50],
-                        selected = "Imports.of.goods.and.services....of.GDP."),
+                        selected = "CO2.emissions..metric.tons.per.capita."),
             hr(),
             # Show data table
             checkboxInput(inputId = "show_data",
@@ -131,25 +128,34 @@ server <- function(input, output) {
     
     world.bank.df$Year <- as.numeric(as.character(world.bank.df$Year))
     
+    # Make a reactive dataframe
+    new_df <- reactiveValues()
+    new_df$df <- world.bank.df
+    
     # Make a subset of aggregated values based on the idicator selected for Plot 1
     indicator_subset <- reactive({
         req(input$y1)
-        world.bank.df %>%
+        new_df$df %>%
             group_by(ContinentName, Year) %>%
-            summarise(Mean = mean(input$y1, na.rm = TRUE))
+            summarise(Mean = mean(get(input$y1), na.rm = TRUE))
     })
+    
+    # world.bank.agg <- world.bank.df %>%
+    #     group_by(ContinentName, Year) %>%
+    #     summarise(Mean = mean(get(input$y1), na.rm = TRUE))
+    
     
     # Create a barplot making comparisons within continents on the selected indicator
     output$barplot <- renderPlot({
-        ggplot(data = indicator_subset(), aes_string(x = "Year", 
-                                                     y = "Mean", 
+        ggplot(data = indicator_subset(), aes_string(x = "Year",
+                                                     y = "Mean",
                                                      fill = "ContinentName")) +
             geom_bar(stat = "identity", width = 0.5, position = "dodge") +
-            scale_x_continuous(breaks = seq(input$x1[1],input$x1[2],1), 
+            scale_x_continuous(breaks = seq(input$x1[1],input$x1[2],1),
                                limits = c(input$x1[1],input$x1[2])) +
             scale_y_continuous(labels = scales::comma) +
-            labs(x = "Year", y = paste("Indicator: ", input$y1), 
-                 title = paste0("Plot 1: Performance of continents on aggregate level from ", 
+            labs(x = "Year", y = paste("Indicator: ", input$y1),
+                 title = paste0("Plot 1: Performance of continents on aggregate level from ",
                                 input$x1[1], " to ", input$x1[2])) +
             theme(text = element_text(size = 15), plot.title = element_text(hjust = 0.5))
     })
