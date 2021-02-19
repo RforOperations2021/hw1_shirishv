@@ -6,7 +6,7 @@ library(dplyr)
 library(tidyr)
 library(tools)
 
-setwd(dir = "C:/Users/shiri/Documents/Homework_1/Economic_indicators/hw1_sverma")
+# setwd(dir = "C:/Users/shiri/Documents/Homework_1/Economic_indicators/hw1_sverma")
 # Read the dataset
 world.bank.df <- read.csv("world_bank_data.csv", check.names = FALSE, na.strings = "..")
 colnames(world.bank.df)[1] <- "IndicatorName"
