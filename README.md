@@ -1,4 +1,4 @@
-# hw1_sverma
+# hw1_shirishv
 This repo contains an R Shiny app and other supplementary files.
 
 This app shows and compares development indicators across continents and countries.
