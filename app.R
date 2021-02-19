@@ -1,12 +1,3 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
-
 library(shiny)
 library(ggplot2)
 library(DT)
@@ -52,7 +43,7 @@ ui <- fluidPage(
                                label = "Select continent(s)*:",
                                choices = unique(world.bank.df$ContinentName),
                                selected = "North America"),
-            h6("* applicable everywhere except plot 1"),
+            h6("* this filter is applicable everywhere except plot 1"),
             
             # Horizontal line for visual separation
             hr(),
@@ -77,19 +68,28 @@ ui <- fluidPage(
             # Show data table
             checkboxInput(inputId = "show_data",
                           label = "Show data table",
-                          value = TRUE)
+                          value = TRUE),
+            
+            hr(),
+            
+            h5(strong("Download data table with all columns")),
+            # Download datatable
+            downloadButton(outputId = "download_dt",
+                           label = "Download data")
             
         ),
 
         # Output
         mainPanel(
-            # Show lineplot
+            # Show barplot
             plotOutput(outputId = "barplot"),
             br(),
             hr(),
+            # show lineplot
             plotOutput(outputId = "lineplot"),
             br(),
             hr(),
+            # show scatterplot
             plotOutput(outputId = "scatterplot"),
             br(),
             hr(),
@@ -140,11 +140,6 @@ server <- function(input, output) {
             summarise(Mean = mean(get(input$y1), na.rm = TRUE))
     })
     
-    # world.bank.agg <- world.bank.df %>%
-    #     group_by(ContinentName, Year) %>%
-    #     summarise(Mean = mean(get(input$y1), na.rm = TRUE))
-    
-    
     # Create a barplot making comparisons within continents on the selected indicator
     output$barplot <- renderPlot({
         ggplot(data = indicator_subset(), aes_string(x = "Year",
@@ -185,8 +180,8 @@ server <- function(input, output) {
     output$selectCountry <- renderUI(
         selectInput(inputId = "country",
                  label = "Select a country:",
-                 choices = continents_subset()$CountryName,
-                 selected = "")
+                 choices = unique(continents_subset()$CountryName),
+                 selected = "United States")
     )
     
     # Create a subset of data filtering for selected continents
@@ -211,6 +206,14 @@ server <- function(input, output) {
             DT::datatable(data = continents_subset()[,1:10], 
                           options = list(pageLength = 10), 
                           rownames = FALSE)
+        }
+    )
+    
+    # Download the data in data table
+    output$download_dt <- downloadHandler(
+        filename = function(){"hw1_shirishv.csv"},
+        content = function(fname){
+            write.csv(continents_subset(), fname)
         }
     )
 }
