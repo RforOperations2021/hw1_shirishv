@@ -149,7 +149,7 @@ server <- function(input, output) {
             scale_x_continuous(breaks = seq(input$x1[1],input$x1[2],1),
                                limits = c(input$x1[1],input$x1[2])) +
             scale_y_continuous(labels = scales::comma) +
-            labs(x = "Year", y = paste("Indicator: ", input$y1),
+            labs(x = "Year", y = paste("Indicator: ", input$y1), fill = "Continents",
                  title = paste0("Plot 1: Performance of continents on aggregate level from ",
                                 input$x1[1], " to ", input$x1[2])) +
             theme(text = element_text(size = 15), plot.title = element_text(hjust = 0.5))
@@ -170,7 +170,7 @@ server <- function(input, output) {
             scale_x_continuous(breaks = seq(input$x1[1],input$x1[2],1), 
                                limits = c(input$x1[1],input$x1[2])) +
             scale_y_continuous(labels = scales::comma) +
-            labs(x = "Year", y = paste("Indicator: ", input$y1), 
+            labs(x = "Year", y = paste("Indicator: ", input$y1), color = "Countries", 
             title = paste0("Plot 2: Trend in countries indicators from ", 
                            input$x1[1], " to ", input$x1[2])) +
             theme(text = element_text(size = 15), plot.title = element_text(hjust = 0.5))
