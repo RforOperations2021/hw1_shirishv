@@ -6,6 +6,31 @@ library(dplyr)
 library(tidyr)
 library(tools)
 
+setwd(dir = "C:/Users/shiri/Documents/Homework_1/Economic_indicators/hw1_sverma")
+# Read the dataset
+world.bank.df <- read.csv("world_bank_data.csv", check.names = FALSE, na.strings = "..")
+colnames(world.bank.df)[1] <- "IndicatorName"
+
+# Using pivot_longer and pivot_longer to get dataset in the desired format
+world.bank.df <- world.bank.df %>%
+    pivot_longer(
+        cols = starts_with("20"),
+        names_to = "Year",
+        values_to = "value",
+        values_drop_na = FALSE
+    )
+
+world.bank.df <- world.bank.df %>%
+    pivot_wider(
+        names_from = IndicatorName,
+        values_from = "value"
+    ) 
+
+# Makes column names syntactically correct
+names(world.bank.df) <- make.names(names(world.bank.df), unique = TRUE)
+
+world.bank.df$Year <- as.numeric(as.character(world.bank.df$Year))
+
 # Define UI for application that draws three plots
 ui <- fluidPage(
 
@@ -103,39 +128,10 @@ ui <- fluidPage(
 # Define server logic required to draw plots and tables
 server <- function(input, output) {
     
-    setwd(dir = "C:/Users/shiri/Documents/Homework_1/Economic_indicators/hw1_sverma")
-    # Read the dataset
-    world.bank.df <- read.csv("world_bank_data.csv", check.names = FALSE, na.strings = "..")
-    colnames(world.bank.df)[1] <- "IndicatorName"
-    
-    # Using pivot_longer and pivot_longer to get dataset in the desired format
-    world.bank.df <- world.bank.df %>%
-        pivot_longer(
-            cols = starts_with("20"),
-            names_to = "Year",
-            values_to = "value",
-            values_drop_na = FALSE
-        )
-    
-    world.bank.df <- world.bank.df %>%
-        pivot_wider(
-            names_from = IndicatorName,
-            values_from = "value"
-        )
-    
-    # Makes column names syntactically correct
-    names(world.bank.df) <- make.names(names(world.bank.df), unique = TRUE)
-    
-    world.bank.df$Year <- as.numeric(as.character(world.bank.df$Year))
-    
-    # Make a reactive dataframe
-    new_df <- reactiveValues()
-    new_df$df <- world.bank.df
-    
     # Make a subset of aggregated values based on the idicator selected for Plot 1
     indicator_subset <- reactive({
         req(input$y1)
-        new_df$df %>%
+        world.bank.df %>% 
             group_by(ContinentName, Year) %>%
             summarise(Mean = mean(get(input$y1), na.rm = TRUE))
     })
